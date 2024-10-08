@@ -12,5 +12,5 @@ RUN git stash
 RUN git checkout v2.0
 
 EXPOSE 5000
-
-CMD ["flask", "run", "add", "--host=0.0.0.0"]
+ENV FLASK_APP=add
+CMD ["flask", "run", "--host=0.0.0.0"]
