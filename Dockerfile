@@ -13,4 +13,4 @@ RUN git checkout v2.0
 
 EXPOSE 5000
 
-CMD ["flask", "run", "-m", "add", "--host=0.0.0.0"]
+CMD ["flask", "run", "add", "--host=0.0.0.0"]
