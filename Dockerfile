@@ -6,5 +6,5 @@ COPY . .
 RUN git stash
 RUN git checkout v2.0
 EXPOSE 5002
-ENTRYPOINT ["python3", "-m"]
+ENTRYPOINT ["python", "-m"]
 CMD ["-m", "add"]
