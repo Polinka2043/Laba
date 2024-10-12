@@ -1,6 +1,5 @@
-from flask import Flask, request, render_template_string
+from flask import Flask, request, render_template_string, jsonify
 import requests
-
 app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
@@ -9,29 +8,57 @@ def index():
         <html>
             <head>
                 <title>Frontend 2.0</title>
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             </head>
             <body>
                 <h1>Frontend 2.0</h1>
-                <form action="/api/data" method="post">
-                    <input type="text" name="userInput" placeholder="Enter some text">
-                    <input type="submit" value="Send to Backend">
+                <form>
+                    <input type="text" id="userInput" placeholder="Enter some text">
+                    <input type="button" value="Send to Backend" onclick="sendToBackend()">
+                    <br><br>
+                    <input type="button" value="Display First Input" onclick="displayFirstInput()">
+                    <br><br>
+                    <input type="text" id="result-field" placeholder="Result">
                 </form>
-                <div id="result-field">{{ result }}</div>
+                <div id="result-field"></div>
+                <script>
+                    function sendToBackend() {
+                        var userInput = $('#userInput').val();  // Only getting userInput
+                        $.ajax({
+                            type: 'POST',
+                            url: '/api/data',
+                            data: JSON.stringify({userInput: userInput}),  // Sending only userInput
+                            contentType: 'application/json',
+                            success: function(data) {
+                                $('#result-field').val(data.data);
+                            },
+                            error: function(xhr, status, error) {
+                                $('#result-field').val('Error: ' + error);
+                            }
+                        });
+                    }
+                    
+                    function displayFirstInput() {
+                        var userInput = $('#userInput').val();
+                        $('#result-field').val(userInput);
+                    }
+                </script>
             </body>
         </html>
     '''
 
 @app.route('/api/data', methods=['POST'])
 def send_to_backend():
-    user_input = request.form['userInput']
-    response = requests.post('http://backend:5000/api/data', json={'userInput': user_input})
-    return render_template_string('''
-        <html>
-            <body>
-                <div id="result-field">{{ response.text }}</div>
-            </body>
-        </html>
-    ''', response=response)
+    try:
+        user_input = request.json['userInput']
+        try:
+            response = requests.post('http://127.0.0.1:5001/api/data', json={'userInput': user_input})
+            response.raise_for_status()
+            return jsonify({'data': response.text})
+        except requests.exceptions.RequestException as e:
+            return jsonify({'error': str(e)}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5002)
